@@ -1,0 +1,39 @@
+{
+	"appId": "io.n8n.local.app",
+	"appName": "n8n Local",
+	"webDir": "www",
+	"bundledWebRuntime": false,
+	"server": {
+		"androidScheme": "http",
+		"cleartext": true,
+		"allowNavigation": [
+			"localhost",
+			"127.0.0.1",
+			"0.0.0.0",
+			"localhost:*",
+			"127.0.0.1:*",
+			"0.0.0.0:*"
+		]
+	},
+	"android": {
+		"allowMixedContent": true,
+		"captureInput": true,
+		"webContentsDebuggingEnabled": true,
+		"backgroundColor": "#18181b",
+		"minWebViewVersion": 88
+	},
+	"plugins": {
+		"SplashScreen": {
+			"launchShowDuration": 1200,
+			"launchAutoHide": true,
+			"backgroundColor": "#18181b",
+			"androidSplashResourceName": "splash",
+			"androidScaleType": "CENTER_CROP",
+			"showSpinner": false
+		},
+		"StatusBar": {
+			"style": "DARK",
+			"backgroundColor": "#09090b"
+		}
+	}
+}

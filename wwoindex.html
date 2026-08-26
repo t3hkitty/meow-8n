@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#09090b">
+  <meta name="description" content="Local-only n8n Android host controller and web companion">
+  <title>n8n Local Android</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="app-container">
+    <!-- Top Header Bar -->
+    <header class="app-header">
+      <div class="header-brand">
+        <div class="logo-icon">
+          <svg viewBox="0 121.3 512.1 269.6" fill="currentColor" style="width: 18px; height: 18px;">
+            <path d="M458.1 229.1c-25.1 0-46.2-17.2-52.2-40.4h-61.8c-13.2 0-24.4 9.5-26.6 22.5l-2.2 13.3c-2 12.2-8.2 23.4-17.5 31.6 9.3 8.2 15.5 19.3 17.5 31.6l2.2 13.3c2.2 13 13.4 22.5 26.6 22.5h7.9c6-23.2 27.1-40.4 52.2-40.4 29.8 0 53.9 24.1 53.9 53.9s-24.1 53.9-53.9 53.9c-25.1 0-46.2-17.2-52.2-40.4h-7.9c-26.3 0-48.8-19-53.2-45l-2.2-13.3c-2.2-13-13.4-22.5-26.6-22.5h-21.4c-6 23.2-27.1 40.4-52.2 19.4s-46.2-17.2-52.2-40.4H106c-6 23.2-27.1-40.4-52.2 40.4C24.1 309.9 0 285.8 0 256s24.1-53.9 53.9-53.9c25.1 0 46.2 17.2 52.2 40.4h30.3c6-23.2 27.1-40.4 52.2-40.4s46.2 17.2 52.2 40.4h21.4c13.2 0 24.4-9.5 26.6-22.5l2.2-13.3c4.3-26 26.8-45 53.2-45H406c6-23.2 2;p.5 40.4 52.2-40.4 29.8 0 53.9 24.1 53.9 53.9s-24.2 53.9-54 53.9m0-27c14.9 0 26.9-12.1 26.9-26.9s-12.1-26.9-26.9-26.9-26.9 12.1-,26.9 26.9 12 26.9 26.9 26.9M53.9 282.9c14.9 0 26.9-12.1 26.9-26.9s-12.1-26.9-,26.9-26.9-27 12-27 26.9 12.1 26.9 27 26.9M215.6 256c0 14.9-12.1 26.9-26.9 26.9s-26.9-12.1-26.9-26.9 12.1-26.9 26.9-26.9 26.9 12 26.9 26.9m215.6 80.8c0 14.9-12.1 26.9-26.9 26.9-14.9 0-26.9-12.1 26.9-26.9s12.1-26.9 26.9-26.9 26.9 12.1 26.9 26.9" style="fill-rule:evenodd;clip-rule:evenodd;fill:#ea4b71"/></svg>
+        </div>
+        <div class="header-titles">
+          <h1>n8n Local</h1>
+          <span class="host-label" id="current-endpoint-display">http://127.0.0.1:5678</span>
+        </div>
+      </div>
+
+      <div class="header-status">
+        <div class="status-indicator-badge status-disconnected" id="global-status-badge">
+          <span class="status-dot"></span>
+          <span class="status-text" id="global-status-text">Offline</span>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <button type="button" class="icon-btn" id="btn-toggle-view" title="Toggle Dashboard / Embedded Canvas" aria-label="Toggle View">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18"/><path d="M15 9h6"/></svg>
+        </button>
+        <button type="button" class="icon-btn" id="btn-refresh-n8n" title="Reload Connection" aria-label="Reload Connection">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+        </button>
+        <button type="button" class="icon-btn" id="btn-open-menu" title="Open Settings & Tools Menu" aria-label="Open Menu">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="app-main">
+      <!-- Embedded n8n Frame View -->
+      <section id="view-embedded" class="view-panel active-view">
+        <div class="iframe-wrapper" id="iframe-wrapper">
+          <div class="offline-overlay" id="offline-overlay">
+            <div class="offline-card">
+              <div class="offline-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              </div>
+              <h2>n8n Daemon Is Not Reachable</h2>
+              <p>The local n8n server is not responding at <code id="offline-endpoint-text">http://127.0.0.1:5678</code>.</p>
+              <div class="offline-actions">
+                <button type="button" class="btn btn-primary" id="btn-quick-launch-termux">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                  Launch via Termux
+                </button>
+                <button type="button" class="btn btn-secondary" id="btn-switch-to-dashboard">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                  Open Control Hub
+                </button>
+                <button type="button" class="btn btn-outline" id="btn-retry-health">
+                  Retry Ping
+                </button>
+              </div>
+            </div>
+          </div>
+          <iframe id="n8n-frame" src="about:blank" title="n8n Local Workflow Editor" allow="camera; microphone; geolocation; clipboard-read; clipboard-write"></iframe>
+        </div>
+      </section>
+
+      <!-- Control Hub & Dashboard View -->
+      <section id="view-dashboard" class="view-panel">
+        <div class="dashboard-container">
+          <!-- Server Status Banner -->
+          <div class="card card-status">
+            <div class="card-header">
+              <div class="card-title-group">
+                <h3>Localhost Server Status</h3>
+                <p class="card-subtitle">Real-time health monitoring for on-device n8n daemon</p>
+              </div>
+              <span class="badge" id="latency-badge">Latency: -- ms</span>
+            </div>
+            <div class="server-metrics-grid">
+              <div class="metric-item">
+                <span class="metric-label">Target URL</span>
+                <span class="metric-val" id="metric-url">http://127.0.0.1:5678</span>
+              </div>
+              <div class="metric-item">
+                <span class="metric-label">Protocol Mode</span>
+                <span class="metric-val" id="metric-protocol">HTTP (Cleartext)</span>
+              </div>
+              <div class="metric-item">
+                <span class="metric-label">HTTP Status</span>
+                <span class="metric-val" id="metric-http-status">--</span>
+              </div>
+              <div class="metric-item">
+                <span class="metric-label">Daemon Runtime</span>
+                <span class="metric-val" id="metric-runtime">Termux / Node.js</span>
+              </div>
+            </div>
+            <div class="card-actions">
+              <button type="button" class="btn btn-sm btn-primary" id="btn-dash-open-canvas">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                Launch Canvas
+              </button>
+              <button type="button" class="btn btn-sm btn-secondary" id="btn-dash-ping">
+                Force Health Check
+              </button>
+              <button type="button" class="btn btn-sm btn-outline" id="btn-dash-logs">
+                View Event Logs
+              </button>
+            </div>
+          </div>
+
+          <!-- Quick Execution Orchestrator -->
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title-group">
+                <h3>Daemon Orchestration</h3>
+                <p class="card-subtitle">One-tap command dispatchers for Termux and Shizuku</p>
+              </div>
+            </div>
+            <div class="orchestrator-grid">
+              <div class="action-box">
+                <div class="action-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+                </div>
+                <div class="action-content">
+                  <h4>Termux Command Runner</h4>
+                  <p>Execute start script directly inside Termux environment via background intent.</p>
+                  <div class="btn-group">
+                    <button type="button" class="btn btn-sm btn-primary" id="btn-exec-termux-start">Start Daemon</button>
+                    <button type="button" class="btn btn-sm btn-danger" id="btn-exec-termux-stop">Stop Daemon</button>
+                    <button type="button" class="btn btn-sm btn-outline" id="btn-copy-termux-cmd">Copy CLI Command</button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="action-box">
+                <div class="action-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                </div>
+                <div class="action-content">
+                  <h4>Shizuku / ADB Privileged Shell</h4>
+                  <p>Keep process alive without root using Shizuku privileged command execution.</p>
+                  <div class="btn-group">
+                    <button type="button" class="btn btn-sm btn-secondary" id="btn-exec-shizuku-keepalive">Enable Keep-Alive</button>
+                    <button type="button" class="btn btn-sm btn-outline" id="btn-copy-shizuku-cmd">Copy Shizuku Script</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Connection & SSL Configuration Card -->
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title-group">
+                <h3>Connection & SSL Configuration</h3>
+                <p class="card-subtitle">Configure localhost endpoints, port bindings, and TLS settings</p>
+              </div>
+            </div>
+            <form id="form-connection-config" class="config-form">
+              <div class="form-row">
+                <div class="form-group flex-2">
+                  <label for="cfg-host">Server Host / IP</label>
+                  <input type="text" id="cfg-host" name="cfg-host" value="127.0.0.1" placeholder="127.0.0.1 or localhost" required>
+                </div>
+                <div class="form-group flex-1">
+                  <label for="cfg-port">Port</label>
+                  <input type="number" id="cfg-port" name="cfg-port" value="5678" min="1024" max="65535" required>
+                </div>
+                <div class="form-group flex-1">
+                  <label for="cfg-protocol">Protocol</label>
+                  <select id="cfg-protocol" name="cfg-protocol">
+                    <option value="http">http://</option>
+                    <option value="https">https:// (Local SSL)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group flex-2">
+                  <label for="cfg-webhook-prefix">Webhook Base Path</label>
+                  <input type="text" id="cfg-webhook-prefix" name="cfg-webhook-prefix" value="webhook" placeholder="webhook">
+                </div>
+                <div class="form-group flex-2">
+                  <label for="cfg-auth-header">Custom Auth / API Header (Optional)</label>
+                  <input type="text" id="cfg-auth-header" name="cfg-auth-header" placeholder="Bearer YOUR_TOKEN or Basic ...">
+                </div>
+              </div>
+
+              <div class="form-row form-checkboxes">
+                <label class="checkbox-label">
+                  <input type="checkbox" id="cfg-auto-connect" checked>
+                  <span>Auto-detect & reconnect when daemon starts</span>
+                </label>
+                <label class="checkbox-label">
+                  <input type="checkbox" id="cfg-ignore-cert-errors">
+                  <span>Trust Local Self-Signed SSL Certificates</span>
+                </label>
+              </div>
+
+              <div class="form-actions">
+                <button type="submit" class="btn btn-primary">Save & Apply Settings</button>
+                <button type="button" class="btn btn-outline" id="btn-reset-defaults">Reset Defaults</button>
+              </div>
+            </form>
+          </div>
+
+          <!-- Webhook Dispatcher & Test Suite -->
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title-group">
+                <h3>Local Webhook Dispatcher</h3>
+                <p class="card-subtitle">Trigger and debug n8n webhook nodes directly on localhost</p>
+              </div>
+            </div>
+            <div class="webhook-tester-body">
+              <div class="form-row">
+                <div class="form-group flex-1">
+                  <label for="wh-method">Method</label>
+                  <select id="wh-method">
+                    <option value="POST">POST</option>
+                    <option value="GET">GET</option>
+                    <option value="PUT">PUT</option>
+                    <option value="DELETE">DELETE</option>
+                  </select>
+                </div>
+                <div class="form-group flex-3">
+                  <label for="wh-path">Webhook Path</label>
+                  <input type="text" id="wh-path" value="webhook-test/mobile-trigger" placeholder="webhook/your-endpoint-path">
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="wh-payload">JSON Payload</label>
+                <textarea id="wh-payload" rows="3" placeholder='{"source": "android-local", "event": "manual-test", "timestamp": 1724370000}'></textarea>
+              </div>
+              <div class="webhook-actions">
+                <button type="button" class="btn btn-secondary" id="btn-fire-webhook">Send Webhook Request</button>
+                <span class="wh-response-status" id="wh-response-status"></span>
+              </div>
+              <div class="wh-result-box" id="wh-result-box" style="display:none;">
+                <label>Response Output:</label>
+                <pre id="wh-result-content"></pre>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Bottom Navigation Bar -->
+    <nav class="bottom-nav">
+      <button type="button" class="nav-item active" id="nav-btn-canvas" data-target="view-embedded">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+        <span>n8n Editor</span>
+      </button>
+      <button type="button" class="nav-item" id="nav-btn-dashboard" data-target="view-dashboard">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        <span>Control Hub</span>
+      </button>
+      <button type="button" class="nav-item" id="nav-btn-ssl" data-modal="modal-ssl">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        <span>Local SSL</span>
+      </button>
+      <button type="button" class="nav-item" id="nav-btn-guide" data-modal="modal-guide">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        <span>Setup Guide</span>
+      </button>
+    </nav>
+
+    <!-- Side Menu Drawer / Modal -->
+    <div class="modal-backdrop" id="modal-menu-drawer" role="dialog" aria-modal="true" aria-labelledby="menu-drawer-title" hidden>
+      <div class="drawer-content">
+        <div class="drawer-header">
+          <h3 id="menu-drawer-title">Tools & Navigation</h3>
+          <button type="button" class="icon-btn close-modal-btn" aria-label="Close menu">&times;</button>
+        </div>
+        <div class="drawer-body">
+          <ul class="drawer-list">
+            <li><button type="button" class="drawer-link" data-open-modal="modal-guide">📘 Termux & Shizuku Setup Guide</button></li>
+            <li><button type="button" class="drawer-link" data-open-modal="modal-ssl">🔒 Local SSL & Certificate Setup</button></li>
+            <li><button type="button" class="drawer-link" data-open-modal="modal-scripts">📜 Bundled Shell Scripts</button></li>
+            <li><button type="button" class="drawer-link" data-open-modal="modal-logs">📊 Live Connection Logs</button></li>
+            <li><button type="button" class="drawer-link" data-open-modal="modal-faq">❓ Frequently Asked Questions</button></li>
+            <li><button type="button" class="drawer-link" data-open-modal="modal-changelog">🚀 Version & Changelog</button></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL 1: Termux & Shizuku Setup Guide -->
+    <div class="modal-backdrop" id="modal-guide" role="dialog" aria-modal="true" aria-labelledby="guide-modal-title" hidden>
+      <div class="modal-card">
+        <div class="modal-header">
+          <h3 id="guide-modal-title">Termux & Shizuku Architecture Guide</h3>
+          <button type="button" class="icon-btn close-modal-btn" aria-label="Close modal">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="guide-section">
+            <h4>1. Overview: How Localhost n8n Operates on Android</h4>
+            <p>n8n is a Node.js workflow orchestration engine. This app functions as a native Android client container, connecting directly to the locally bound server instance at <code>http://127.0.0.1:5678</code> or <code>https://localhost:5678</code>.</p>
+          </div>
+
+          <div class="guide-section">
+            <h4>2. Termux Installation Steps</h4>
+            <ol>
+              <li>Install <strong>Termux</strong> from F-Droid (do not use Google Play version).</li>
+              <li>Install <strong>Termux:API</strong> and <strong>Termux:Boot</strong> (optional for autostart).</li>
+              <li>Open Termux and run the bootstrap command:
+                <pre><code>pkg update -y && pkg install -y nodejs-lts python build-essential git openssl
+npm install -g n8n pm2</code></pre>
+              </li>
+              <li>Launch n8n via PM2 to ensure background execution:
+                <pre><code>pm2 start n8n --name "n8n-local" -- --tunnel=false
+pm2 save</code></pre>
+              </li>
+            </ol>
+          </div>
+
+          <div class="guide-section">
+            <h4>3. Battery Optimization & Background Execution (Android 12+)</h4>
+            <p>Android's Phantom Process Killer and Doze mode may kill background Node.js processes. To ensure uninterrupted automation:</p>
+            <ul>
+              <li>Disable Battery Optimization for <strong>Termux</strong> and <strong>n8n Local</strong> (Settings → Apps → Battery → Unrestricted).</li>
+              <li>If using <strong>Shizuku</strong>, run the following ADB command once via Shizuku/rish to disable phantom process limits:
+                <pre><code>device_config put activity_manager max_phantom_processes 2147483647</code></pre>
+              </li>
+              <li>Acquire a Termux Wake Lock by running <code>termux-wake-lock</code> or starting n8n via the provided starter script.</li>
+            </ul>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary close-modal-btn">Close</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL 2: Local SSL & Certificates -->
+    <div class="modal-backdrop" id="modal-ssl" role="dialog" aria-modal="true" aria-labelledby="ssl-modal-title" hidden>
+      <div class="modal-card">
+        <div class="modal-header">
+          <h3 id="ssl-modal-title">Local SSL & HTTPS Configuration</h3>
+          <button type="button" class="icon-btn close-modal-btn" aria-label="Close modal">&times;</button>
+        </div>
+        <div class="modal-body">
+          <p>Running n8n over HTTPS locally enables full browser crypto APIs, clipboard features, and secure webhook tunnels.</p>
+          
+          <h4>Option A: Auto-Generate Self-Signed Certificate via OpenSSL in Termux</h4>
+          <p>Run this script inside Termux to create a local certificate with SAN (Subject Alternative Name) for <code>localhost</code> and <code>127.0.0.1</code>:</p>
+          <pre><code>mkdir -p ~/.n8n-ssl && cd ~/.n8n-ssl
+openssl req -x509 -newkey rsa:2048 -nodes \
+  -keyout n8n-local.key -out n8n-local.crt -days 3650 \
+  -subj "/CN=localhost" \
+  -addext "subjectAltName=DNS:localhost,IP:127.0.0.1"</code></pre>
+
+          <h4>Option B: Run n8n with Local TLS Flags</h4>
+          <pre><code>export N8N_PROTOCOL=https
+export N8N_SSL_KEY=~/.n8n-ssl/n8n-local.key
+export N8N_SSL_CERT=~/.n8n-ssl/n8n-local.crt
+export WEBHOOK_URL=https://localhost:5678/
+n8n start</code></pre>
+
+          <h4>Android Network Security Configuration</h4>
+          <p>This APK includes a custom <code>network_security_config.xml</code> that permits cleartext localhost traffic and trusts both user-installed CA certificates and system certificates, ensuring seamless local HTTPS loading.</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary" id="btn-copy-ssl-script">Copy OpenSSL Script</button>
+          <button type="button" class="btn btn-secondary close-modal-btn">Close</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL 3: Bundled Scripts -->
+    <div class="modal-backdrop" id="modal-scripts" role="dialog" aria-modal="true" aria-labelledby="scripts-modal-title" hidden>
+      <div class="modal-card">
+        <div class="modal-header">
+          <h3 id="scripts-modal-title">Termux & Shell Helper Scripts</h3>
+          <button type="button" class="icon-btn close-modal-btn" aria-label="Close modal">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="script-item">
+            <h4>1. All-In-One Setup Script (<code>setup-termux-n8n.sh</code>)</h4>
+            <pre><code id="code-setup-script">#!/data/data/com.termux/files/usr/bin/bash
+set -e
+echo "==> Setting up local n8n environment on Android..."
+pkg update -y
+pkg install -y nodejs-lts python build-essential git openssl termux-api
+npm install -g n8n pm2
+mkdir -p ~/.n8n
+termux-wake-lock
+echo "==> Setup complete. Run 'n8n' or start via PM2."</code></pre>
+            <button type="button" class="btn btn-sm btn-outline copy-btn" data-target="code-setup-script">Copy Script</button>
+          </div>
+
+          <div class="script-item">
+            <h4>2. Background Starter Script (<code>start-n8n.sh</code>)</h4>
+            <pre><code id="code-start-script">#!/data/data/com.termux/files/usr/bin/bash
+termux-wake-lock
+export N8N_PORT=5678
+export N8N_PROTOCOL=http
+export N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=true
+export WEBHOOK_URL=http://127.0.0.1:5678/
+export GENERIC_TIMEZONE=America/Los_Angeles
+export NODE_OPTIONS="--max-old-space-size=1024"
+pm2 start n8n --name "n8n-local" -- --tunnel=false</code></pre>
+            <button type="button" class="btn btn-sm btn-outline copy-btn" data-target="code-start-script">Copy Script</button>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary close-modal-btn">Close</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL 4: Logs & Diagnostics -->
+    <div class="modal-backdrop" id="modal-logs" role="dialog" aria-modal="true" aria-labelledby="logs-modal-title" hidden>
+      <div class="modal-card">
+        <div class="modal-header">
+          <h3 id="logs-modal-title">Live Diagnostics & Event Log</h3>
+          <button type="button" class="icon-btn close-modal-btn" aria-label="Close modal">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="log-controls">
+            <button type="button" class="btn btn-sm btn-outline" id="btn-clear-logs">Clear Log</button>
+            <button type="button" class="btn btn-sm btn-outline" id="btn-export-logs">Export Log</button>
+          </div>
+          <div class="log-console" id="log-console"></div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary close-modal-btn">Close</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL 5: FAQ Modal -->
+    <div class="modal-backdrop" id="modal-faq" role="dialog" aria-modal="true" aria-labelledby="faq-modal-title" hidden>
+      <div class="modal-card">
+        <div class="modal-header">
+          <h3 id="faq-modal-title">Frequently Asked Questions</h3>
+          <button type="button" class="icon-btn close-modal-btn" aria-label="Close modal">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="faq-item">
+            <h4>Q: Does this app require internet access to operate workflows?</h4>
+            <p>No. When executing purely local automations (such as file transformations, local database queries, on-device webhooks, or local script calls), all execution stays strictly on <code>127.0.0.1</code> / localhost without sending telemetry or traffic externally.</p>
+          </div>
+          <div class="faq-item">
+            <h4>Q: How does this app trigger Termux commands automatically?</h4>
+            <p>The Android manifest declares the <code>com.termux.permission.RUN_COMMAND</code> permission, allowing this controller to send background intents directly to the Termux service to start, restart, or terminate the n8n daemon process.</p>
+          </div>
+          <div class="faq-item">
+            <h4>Q: What is Shizuku used for?</h4>
+            <p>Shizuku gives the app elevated shell permissions without root access. This is particularly useful for preventing Android from terminating the Node.js daemon and for executing ADB-level commands like disabling the phantom process killer.</p>
+          </div>
+          <div class="faq-item">
+            <h4>Q: Can I use self-signed SSL certificates?</h4>
+            <p>Yes. The app provides built-in OpenSSL generator commands and custom Android network security configurations allowing user CA trust and localhost certificate overrides.</p>
+          </div>
+          <div class="faq-item">
+            <h4>Q: Where are my n8n workflows and SQLite database stored?</h4>
+            <p>By default, n8n saves its database and encryption keys inside Termux's private data storage at <code>~/.n8n/database.sqlite</code> and <code>~/.n8n/config</code>.</p>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary close-modal-btn">Close</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL 6: Changelog Modal -->
+    <div class="modal-backdrop" id="modal-changelog" role="dialog" aria-modal="true" aria-labelledby="changelog-modal-title" hidden>
+      <div class="modal-card">
+        <div class="modal-header">
+          <h3 id="changelog-modal-title">Version History & Changelog</h3>
+          <button type="button" class="icon-btn close-modal-btn" aria-label="Close modal">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="changelog-release">
+            <h4>v1.0.0 — Initial Localhost Edition</h4>
+            <span class="release-date">August 2026</span>
+            <ul>
+              <li>Full Capacitor 6 native Android wrapper with cleartext traffic & localhost routing.</li>
+              <li>Direct Termux <code>RUN_COMMAND</code> intent integration for one-tap daemon boot.</li>
+              <li>Shizuku keep-alive and background process orchestration.</li>
+              <li>Local SSL / TLS configuration and custom CA network security config.</li>
+              <li>Integrated Webhook Dispatcher and HTTP test harness for localhost nodes.</li>
+              <li>Persistent client settings with auto-reconnect and health check polling.</li>
+              <li>Accessible modal dialogues with full ARIA specifications and dark UI theme.</li>
+            </ul>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary close-modal-btn">Close</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container" aria-live="polite"></div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

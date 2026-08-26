@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">n8n Local</string>
+    <string name="title_activity_main">n8n Local</string>
+    <string name="package_name">io.n8n.local.app</string>
+    <string name="custom_url_scheme">n8n</string>
+</resources>

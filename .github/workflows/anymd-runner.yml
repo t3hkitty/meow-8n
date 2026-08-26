@@ -1,0 +1,51 @@
+name: Anymd n8n Execution Runner
+
+on:
+  repository_dispatch:
+    types: [process-queue, webhook-trigger]
+  schedule:
+    - cron: '*/15 * * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: anymd-execution
+  cancel-in-progress: false
+
+jobs:
+  run-engine:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout Vault
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Process Queue & Execute Workflows
+        run: npx ts-node src/run-queue.ts
+        env:
+          VAULT_PATH: ${{ github.workspace }}
+          CREDENTIALS_KEY: ${{ secrets.ANYMD_VAULT_KEY }}
+
+      - name: Commit and Push Changes
+        run: |
+          git config --global user.name "anymd-bot[bot]"
+          git config --global user.email "anymd-bot[bot]@users.noreply.github.com"
+          git add queue/ executions/ workflows/
+          if ! git diff --cached --quiet; then
+            git commit -m "chore(vault): update execution logs and queue [skip ci]"
+            git push
+          else
+            echo "No changes to commit"
+          fi
