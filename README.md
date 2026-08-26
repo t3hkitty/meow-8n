@@ -1,4 +1,4 @@
-🐾 meow-n8n: GitHubOnly AnyMD Database Sync Service 🐾
+🐾 meow-n8n: GitHub&AnyMD Database Sync Service 🐾
 ```text
     /\_/\           🐾 setup options inside!
    ( >.< )  _______
@@ -8,14 +8,14 @@
   \_/ \_/ /
 ```
 🌸 Overview
-This project provides a GitHub-only n8n database service designed to act as a serverless, local-first database adapter for your AnyMD vault [cite: 340]. By forwarding webhook payloads directly to your target GitHub repository, n8n automatically compiles the data into structured Markdown files with custom YAML frontmatter—providing secure, version-controlled records hosted entirely for free under standard Git [cite: 340].
+This project provides an anymd-only (no sql) n8n database plugin designed to act as a local-first database adapter for your AnyMD vault [cite: 340]. By forwarding webhook payloads directly to your target GitHub repository, n8n automatically compiles the data into structured Markdown files with custom YAML frontmatter—providing secure, version-controlled records hosted entirely for free under standard Git [cite: 340].
 ---
 **Updated Prerequisites Section:**
 
 ```markdown
 ## 📦 Prerequisites
 
-Because n8n requires an active Node.js execution runtime, you must host your n8n instance on one of the following (low-cost, or free if you happen to have these laying around):
+Because n8n requires an active Node.js execution runtime, you must host your n8n instance on one of the following (low-cost, or free if you happen to have these laying around) because anymd is a static database with minimal overhead, it will reduce the resource needs to run n8n, which was the goal even if a github-only version of n8n would be sweet:
 
 * **Spare PC, Laptop, or Mac:** Any old machine on your home Wi-Fi running Node.js 18+ or Docker.
 * **Spare Android Device:** An unused phone or tablet running Termux[cite: 1].
