@@ -10,14 +10,21 @@
 🌸 Overview
 This project provides a GitHub-only n8n database service designed to act as a serverless, local-first database adapter for your AnyMD vault [cite: 340]. By forwarding webhook payloads directly to your target GitHub repository, n8n automatically compiles the data into structured Markdown files with custom YAML frontmatter—providing secure, version-controlled records hosted entirely for free under standard Git [cite: 340].
 ---
-🚀 n8n Setup & Ingestion Methods (Choose One)
-You can configure and deploy your n8n workflow using any of the following four methods.
-> [!WARNING]
-> Since **GitHub Pages is a static hosting platform, it cannot host active n8n background processes natively** [cite: 339]. Therefore, Option 4 is **not an automatic, self-contained hosting method**; you must run or host your active n8n instance on one of the other environments (local PC, Termux, or VPS) to process, format, and commit incoming webhook payloads [cite: 339, 340].
-1. Locally on PC/Mac (Free & Private)
-Run n8n directly on your local developer machine using Node.js or Docker:
-npm (Requires Node.js):
-```bash
+**Updated Prerequisites Section:**
+
+```markdown
+## 📦 Prerequisites
+
+Because n8n requires an active Node.js execution runtime, you must host your n8n instance on one of the following (low-cost, or free if you happen to have these laying around):
+
+* **Spare PC, Laptop, or Mac:** Any old machine on your home Wi-Fi running Node.js 18+ or Docker.
+* **Spare Android Device:** An unused phone or tablet running Termux[cite: 1].
+* **Home Server / Raspberry Pi:** A low-power single-board computer running Linux.
+* **Cloud VPS (Optional):** A lightweight virtual server or free-tier instance[cite: 1].
+
+*(Note: GitHub Pages only hosts static web files and cannot execute the active n8n backend engine.)*
+
+```
   npm install n8n -g
   n8n start
   ```
