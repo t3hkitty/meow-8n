@@ -194,7 +194,7 @@ class AnymdRunner:
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Anymd Workflow Runner")
-    parser.add_argument('--workflow', required=True, help="Path to workflow Markdown file")
+    parser.add_argument('--workflow', help="Path to workflow Markdown file")
     parser.add_argument('--payload', help="JSON string of the payload")
     parser.add_argument('--test', action='store_true', help="Run in test verification mode")
 
@@ -203,6 +203,9 @@ if __name__ == '__main__':
     if args.test:
         print("[+] Verification test successful.")
         sys.exit(0)
+
+    if not args.workflow:
+        parser.error("the following arguments are required: --workflow")
 
     payload_data = {}
     if args.payload:

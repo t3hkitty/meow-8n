@@ -1,7 +1,7 @@
-# 🐾 meow-8n: Cloud-Synced AnyMD Webhook DB 🐾
+# 🐾 meow-8n: Anymd database & Sync Service 🐾
 
 ```text
-    /\_/\           🐾 now with 100% remote VPS sidecar!
+    /\_/\           
    ( >.< )  _______
     > ^ <  /       \
    /     \|  meow!  |
@@ -10,39 +10,28 @@
 ```
 
 ## 🌸 Overview
-This project provides a remote, cloud-hosted **n8n database sync sidecar** for **AnyMD**. Webhook payloads sent from the AnyMD app are dispatched directly to your n8n cloud instance, which converts them to structured Markdown with YAML frontmatter and commits them to your GitHub repository.
+This project provides a serverless, local-first database adapter using **Anymd**. By running on-demand workflow executions, it compiles incoming payloads into standard Markdown files with structured YAML frontmatter and commits them directly to your target GitHub repository.
+
+No heavy Node.js `n8n` dependencies, PostgreSQL servers, or `isolated-vm` daemons are needed!
 
 ---
 
-## ⚡ Key Architecture
-* **Zero Local Dependencies:** The AnyMD Android app functions purely as an HTTP webhook client targeting `https://n8n.lorikitty.me/webhook/anymd-db`. No Termux or on-device Node.js servers needed!
-* **Isolated Sidecar:** n8n runs in a dedicated Docker container bound to `127.0.0.1:5678` with data isolated at `/opt/n8n/data` on the VPS.
-* **Caddy Reverse Proxy:** Handles SSL and proxy routes traffic safely to n8n.
-* **Automated Daily Backups:** Systemd daily timer invokes `/home/ubuntu/app/scripts/backup-n8n.sh` to package `/opt/n8n/data` into timestamped zip files with a 7-day retention limit.
+## 🚀 Setup & Execution
 
----
-
-## 🚀 Ingestion Endpoint
-Target Endpoint: `https://n8n.lorikitty.me/webhook/anymd-db` (or `https://n8n.lorik.me/webhook/anymd-db`)
-
-### Payload Format:
-```json
-{
-  "owner": "github-username",
-  "repository": "anymd-vault",
-  "vault": "sandbox_vault",
-  "filename": "Zettel_20260825.md",
-  "frontmatter": {
-    "type": "journal_log",
-    "title": "Cozy Evening",
-    "tags": ["#lifeboat", "#journal"]
-  },
-  "content": "This is the body of the markdown record."
-}
+### 1. Bootstrap on Termux (Android)
+To install Python 3 and setup dependencies inside native Termux:
+```bash
+bash scripts/setup-termux-anymd.sh
 ```
 
-```text
-      (\_/)
-     (='.'=)  🐾 keep your blackbox safe & cute!
-     (")_(")
+### 2. Run Queue Watcher Daemon
+To process files dropped in the execution queue on-demand:
+```bash
+bash scripts/start-anymd.sh
+```
+
+### 3. Trigger On-Demand Manually
+To execute a workflow file directly:
+```bash
+python3 scripts/anymd_runner.py --workflow n8n-githubonly-anymd-workflow.json --payload '{"body": {"owner": "user", "repository": "repo"}}'
 ```
