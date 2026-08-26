@@ -1,0 +1,115 @@
+{
+  "name": "GitHubOnly AnyMD Database Sync Service",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "anymd-db",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-trigger",
+      "name": "Webhook Ingestion",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        250,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $input.item.json.body || {};\nconst vault = body.vault || 'default_vault';\nconst filename = body.filename || `Zettel_${Date.now()}.md`;\nconst frontmatter = body.frontmatter || {};\nconst content = body.content || '';\n\n// Generate YAML Frontmatter\nlet fmString = '---\\n';\nfor (const [key, val] of Object.entries(frontmatter)) {\n  if (Array.isArray(val)) {\n    fmString += `${key}:\\n`;\n    val.forEach(item => {\n      fmString += `  - \"${item.replace(/\"/g, '\\\"')}\"\\n`;\n    });\n  } else if (typeof val === 'object' && val !== null) {\n    fmString += `${key}:\\n`;\n    for (const [subKey, subVal] of Object.entries(val)) {\n      fmString += `  ${subKey}: \"${String(subVal).replace(/\"/g, '\\\"')}\"\\n`;\n    }\n  } else {\n    fmString += `${key}: \"${String(val).replace(/\"/g, '\\\"')}\"\\n`;\n  }\n}\nfmString += '---\\n';\n\nconst fullMarkdown = `${fmString}${content}`;\nconst repoPath = `vaults/${vault}/${filename}`;\n\nreturn {\n  json: {\n    vault,\n    filename,\n    repoPath,\n    fullMarkdown,\n    base64Content: Buffer.from(fullMarkdown).toString('base64'),\n    commitMessage: `chore(db): update ${filename} in ${vault}`\n  }\n};"
+      },
+      "id": "compile-anymd",
+      "name": "Compile AnyMD File",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [
+        450,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "owner": "={{$node[\"Webhook Ingestion\"].json.body.owner}}",
+        "repository": "={{$node[\"Webhook Ingestion\"].json.body.repository}}",
+        "filePath": "={{$json.repoPath}}",
+        "fileContent": "={{$json.base64Content}}",
+        "commitMessage": "={{$json.commitMessage}}",
+        "binaryData": false,
+        "encoding": "base64",
+        "additionalParameters": {}
+      },
+      "id": "github-upload",
+      "name": "Push to GitHub Repo",
+      "type": "n8n-nodes-base.github",
+      "typeVersion": 1,
+      "position": [
+        680,
+        300
+      ],
+      "credentials": {
+        "githubOAuth2Api": {
+          "id": "github-oauth-creds",
+          "name": "GitHub Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"success\": true,\n  \"message\": \"Document written to GitHub-only AnyMD database\",\n  \"vault\": \"{{$node[\"Compile AnyMD File\"].json.vault}}\",\n  \"file\": \"{{$node[\"Compile AnyMD File\"].json.filename}}\",\n  \"repo_path\": \"{{$node[\"Compile AnyMD File\"].json.repoPath}}\",\n  \"github_html_url\": \"{{$json.html_url || ''}}\"\n}",
+        "options": {}
+      },
+      "id": "respond-webhook",
+      "name": "Respond to Caller",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        900,
+        300
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook Ingestion": {
+      "main": [
+        [
+          {
+            "node": "Compile AnyMD File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Compile AnyMD File": {
+      "main": [
+        [
+          {
+            "node": "Push to GitHub Repo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Push to GitHub Repo": {
+      "main": [
+        [
+          {
+            "node": "Respond to Caller",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  }
+}
